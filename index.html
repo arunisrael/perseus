@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="utf-8">
+<title>Perseus</title>
+
+<link rel="stylesheet" type="text/css" href="/ke/css/khan-site.css" />
+<link rel="stylesheet" type="text/css" href="/ke/css/khan-exercise.css" />
+<link rel="stylesheet" type="text/css" href="/lib/katex/fonts/fonts.css" />
+<link rel="stylesheet/less" type="text/css" href="/lib/katex/katex.less" />
+
+<link rel="stylesheet/less" type="text/css" href="/stylesheets/exercise-content-package/perseus.less" />
+<link rel="stylesheet/less" type="text/css" href="/stylesheets/perseus-admin-package/editor.less" />
+<script>less = { env: 'development' };</script>
+<script src="/lib/less.js"></script>
+
+</head>
+<body>
+
+<div id="extras">
+    <button id="toJSON">toJSON</button>
+    <button id="scorePreview">Score</button>
+    <span>Seed:</span><span id="problemNum"></span>
+</div>
+
+<!-- Begin Perseus HTML -->
+<div id="perseus-container">
+</div>
+<!-- End Perseus HTML -->
+
+<!-- put an empty div here so the margin on the perseus editor has something
+to "push against" (without the div, the padding goes off the page, and the
+add hint button ends up touching the bottom of the page). -->
+<div class="clear"></div>
+
+<script src="/lib/jquery.js"></script>
+<script src="/lib/underscore.js"></script>
+<script src="/lib/marked.js"></script>
+<script src="/lib/react.js"></script>
+<script src="/lib/JSXTransformer.js"></script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML-full&amp;delayStartupUntil=configured"></script>
+<script src="/lib/katex/katex.js"></script>
+<script src="/ke/local-only/kas.js"></script>
+
+<script>
+    var icu = {
+        getDecimalFormatSymbols: function() {
+            return {
+                decimal_separator: ".",
+                grouping_separator: ",",
+                minus: "-"
+            };
+        }
+    };
+    var KhanUtil = {
+        debugLog: function() {},
+        localeToFixed: function(num, precision) {
+            return num.toFixed(precision);
+        }
+    };
+    var Khan = {
+        Util: KhanUtil,
+        error: function() {},
+        query: {debug: ""},
+        imageBase: "/ke/images/",
+        scratchpad: {
+            enable: function() {},
+            disable: function() {}
+        }
+    };
+    React.initializeTouchEvents(true);
+</script>
+
+<script src="/ke/local-only/jed.js"></script>
+<script src="/ke/local-only/i18n.js"></script>
+<script src="/ke/local-only/jquery.qtip.js"></script>
+<script src="/ke/utils/answer-types.js"></script>
+<script src="/ke/utils/knumber.js"></script>
+<script src="/ke/utils/kvector.js"></script>
+<script src="/ke/utils/kpoint.js"></script>
+<script src="/ke/utils/kray.js"></script>
+<script src="/ke/utils/kline.js"></script>
+<script src="/ke/utils/math.js"></script>
+
+<script src="/ke/utils/tmpl.js"></script>
+<script src="/ke/third_party/raphael.js"></script>
+<script src="/ke/utils/graphie.js"></script>
+<script src="/ke/third_party/jquery.mobile.vmouse.js"></script>
+<script src="/ke/utils/interactive.js"></script>
+<script src="/ke/exercises-stub.js"></script>
+<script src="/ke/utils/tex.js"></script>
+
+<!-- pre built --><!--
+<script src="/build/perseus.js"></script>
+-->
+
+<!-- pre built with source maps--><!--
+<script src="/build/perseus.debug.js"></script>
+-->
+
+<!-- built in the browser -->
+<script src="/src/editor-page.jsx"></script>
+
+
+<script>
+(function() {
+
+var editor;
+var problemNum = _.random(1, 99);
+
+$('#toJSON').on('click', function() {
+    console.log(JSON.stringify(editor, null, 4));
+});
+$('#scorePreview').on('click', function() {
+    console.log(editor.scorePreview());
+});
+$('#problemNum').text(problemNum);
+
+var question = {
+    "question": {
+        "content": "[[☃ expression 1]]",
+        "widgets": {
+            "expression 1": {
+                "type": "expression",
+                "graded": true,
+                "options": {
+                    "value": "6/3",
+                    "form": false,
+                    "simplify": true,
+                    "times": false,
+                    "functions": [
+                        "f",
+                        "g",
+                        "h"
+                    ]
+                }
+            }
+        }
+    },
+    "answerArea": {
+        "type": "multiple",
+        "options": {
+            "content": "This is an obtuse angle because its measure is [[☃ dropdown 1]] $90^\\circ$.",
+            "widgets": {
+                "dropdown 1": {
+                    "type": "dropdown",
+                    "graded": true,
+                    "options": {
+                        "choices": [
+                            {
+                                "content": "equal to",
+                                "correct": false
+                            },
+                            {
+                                "content": "greater than",
+                                "correct": true
+                            },
+                            {
+                                "content": "less than",
+                                "correct": false
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "calculator": false
+    },
+    "hints": [
+        {
+            "content": "Here's one way to make an angle with these points, but this angle is acute, not obtuse!  \n![](https://ka-perseus-images.s3.amazonaws.com/93fd1b71b55ca18f4a81ad0520df8c96e07125f4.png)",
+            "widgets": {}
+        },
+        {
+            "content": "Here is the way to make an obtuse angle in this situation. It's an obtuse angle because its measure is greater than $90$ degrees.  \n![](https://ka-perseus-images.s3.amazonaws.com/303cfd47cb758adc31af8f80d440827199c6bc63.png)",
+            "widgets": {}
+        }
+    ]
+} ;
+
+Perseus.init({}).then(function() {
+    var editorProps = _.extend(question, {
+        problemNum: problemNum,
+        developerMode: true
+    });
+
+    editor = React.renderComponent(
+        Perseus.StatefulEditorPage(editorProps, null),
+        document.getElementById("perseus-container")
+    );
+}).then(function() {
+    console.log("all done.", +new Date/1000);
+}, function(err) {
+    console.error(err);
+});
+
+})();
+</script>
+
+</body>
+</html>
